@@ -4,6 +4,12 @@ from database import Base
 from pydantic import BaseModel
 from datetime import date
 
+class Person(Base):
+    __tablename__ = "persons"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False, unique=True, index=True)
+
 class SmokingRecord(Base):
     __tablename__ = "smoking_records"
     
@@ -22,6 +28,16 @@ class SmokingRecordResponse(BaseModel):
     date: date
     person: str
     count: int
+    
+    class Config:
+        from_attributes = True
+
+class PersonCreate(BaseModel):
+    name: str
+
+class PersonResponse(BaseModel):
+    id: int
+    name: str
     
     class Config:
         from_attributes = True

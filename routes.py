@@ -8,6 +8,77 @@ from database import get_db
 
 router = APIRouter()
 
+# Person routes
+@router.get("/persons", response_model=List[models.PersonResponse])
+def get_persons(db: Session = Depends(get_db)):
+    persons = db.query(models.Person).order_by(models.Person.name).all()
+    return persons
+
+@router.post("/persons", response_model=models.PersonResponse)
+def create_person(
+    name: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    # Check if person already exists
+    existing_person = db.query(models.Person).filter(models.Person.name == name).first()
+    if existing_person:
+        raise HTTPException(status_code=400, detail="Person with this name already exists")
+    
+    person_data = models.PersonCreate(name=name)
+    db_person = models.Person(**person_data.model_dump())
+    db.add(db_person)
+    db.commit()
+    db.refresh(db_person)
+    
+    return db_person
+
+@router.put("/persons/{person_id}", response_model=models.PersonResponse)
+def update_person(
+    person_id: int,
+    name: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    db_person = db.query(models.Person).filter(models.Person.id == person_id).first()
+    if not db_person:
+        raise HTTPException(status_code=404, detail="Person not found")
+    
+    # Check if new name already exists (but not for the same person)
+    existing_person = db.query(models.Person).filter(
+        models.Person.name == name,
+        models.Person.id != person_id
+    ).first()
+    if existing_person:
+        raise HTTPException(status_code=400, detail="Person with this name already exists")
+    
+    old_name = db_person.name
+    db_person.name = name
+    
+    # Update all records with the old name to use the new name
+    db.query(models.SmokingRecord).filter(
+        models.SmokingRecord.person == old_name
+    ).update({"person": name})
+    
+    db.commit()
+    db.refresh(db_person)
+    return db_person
+
+@router.delete("/persons/{person_id}")
+def delete_person(person_id: int, db: Session = Depends(get_db)):
+    db_person = db.query(models.Person).filter(models.Person.id == person_id).first()
+    if not db_person:
+        raise HTTPException(status_code=404, detail="Person not found")
+    
+    # Check if person has records
+    records_count = db.query(models.SmokingRecord).filter(models.SmokingRecord.person == db_person.name).count()
+    if records_count > 0:
+        raise HTTPException(status_code=400, detail="Cannot delete person with existing records")
+    
+    db.delete(db_person)
+    db.commit()
+    return {"message": "Person deleted successfully"}
+
+# Smoking record routes
+
 @router.get("/records", response_model=List[models.SmokingRecordResponse])
 def get_records(
     person: Optional[str] = None,

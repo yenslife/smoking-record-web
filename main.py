@@ -23,6 +23,10 @@ async def home(request: Request):
 async def reports(request: Request):
     return templates.TemplateResponse("reports.html", {"request": request})
 
+@app.get("/persons", response_class=HTMLResponse)
+async def persons(request: Request):
+    return templates.TemplateResponse("persons.html", {"request": request})
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -1,271 +1,346 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>煙癮紀錄 - 報表</title>
-    
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- HTMX CDN -->
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    
-    <!-- Chart.js for reports -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ISMP 煙癮紀錄 - 報表</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- HTMX CDN -->
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+  <!-- Chart.js for reports -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body class="bg-gray-50 min-h-screen">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center">
-                    <h1 class="text-xl font-bold text-gray-900">🚭 煙癮紀錄</h1>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="/" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">首頁</a>
-                    <a href="/reports" class="text-gray-900 bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">報表</a>
-                </div>
-            </div>
+  <!-- Navigation -->
+  <nav class="bg-white shadow-sm border-b">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center">
+          <h1 class="text-xl font-bold text-gray-900">🚭 ISMP 煙癮紀錄</h1>
         </div>
-    </nav>
-
-    <!-- Main content -->
-    <main class="max-w-6xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <!-- Filter Controls -->
-        <div class="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 class="text-lg font-medium text-gray-900 mb-4">篩選條件</h2>
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div>
-                    <label for="person-filter" class="block text-sm font-medium text-gray-700">人物</label>
-                    <select id="person-filter" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2">
-                        <option value="">全部</option>
-                        <option value="小明">小明</option>
-                        <option value="小華">小華</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="start-date" class="block text-sm font-medium text-gray-700">開始日期</label>
-                    <input type="date" id="start-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2">
-                </div>
-                <div>
-                    <label for="end-date" class="block text-sm font-medium text-gray-700">結束日期</label>
-                    <input type="date" id="end-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2">
-                </div>
-            </div>
-            <div class="mt-4">
-                <button onclick="updateReports()" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                    更新報表
-                </button>
-            </div>
+        <div class="flex items-center space-x-4">
+          <a href="/" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">首頁</a>
+          <a href="/reports" class="text-gray-900 bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">報表</a>
+          <a href="/persons" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">人員管理</a>
         </div>
+      </div>
+    </div>
+  </nav>
 
-        <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="text-sm font-medium text-gray-500">總記錄數</div>
-                <div id="total-records" class="text-2xl font-bold text-gray-900">-</div>
-            </div>
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="text-sm font-medium text-gray-500">總抽煙數</div>
-                <div id="total-cigarettes" class="text-2xl font-bold text-red-600">-</div>
-            </div>
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="text-sm font-medium text-gray-500">日平均</div>
-                <div id="daily-average" class="text-2xl font-bold text-orange-600">-</div>
-            </div>
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="text-sm font-medium text-gray-500">最高單日</div>
-                <div id="max-daily" class="text-2xl font-bold text-purple-600">-</div>
-            </div>
+  <!-- Main content -->
+  <main class="max-w-6xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <!-- Filter Controls -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+      <h2 class="text-lg font-medium text-gray-900 mb-4">篩選條件</h2>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div>
+          <label for="person-filter" class="block text-sm font-medium text-gray-700">人物</label>
+          <select id="person-filter"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2">
+            <option value="">全部</option>
+            <!-- Options will be loaded dynamically -->
+          </select>
         </div>
-
-        <!-- Charts -->
-        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6">
-            <!-- Daily Trend Chart -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">每日趨勢圖</h3>
-                <canvas id="daily-chart" width="400" height="200"></canvas>
-            </div>
-            
-            <!-- Person Comparison Chart -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">人員比較圖</h3>
-                <canvas id="person-chart" width="400" height="200"></canvas>
-            </div>
+        <div>
+          <label for="start-date" class="block text-sm font-medium text-gray-700">開始日期</label>
+          <input type="date" id="start-date"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2">
         </div>
-
-        <!-- Detailed Table -->
-        <div class="bg-white rounded-lg shadow">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">詳細記錄</h3>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">日期</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">人物</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">數量</th>
-                        </tr>
-                    </thead>
-                    <tbody id="records-table" class="bg-white divide-y divide-gray-200">
-                        <!-- Table rows will be populated by JavaScript -->
-                    </tbody>
-                </table>
-            </div>
+        <div>
+          <label for="end-date" class="block text-sm font-medium text-gray-700">結束日期</label>
+          <input type="date" id="end-date"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2">
         </div>
-    </main>
+      </div>
+      <div class="mt-4">
+        <button onclick="updateReports()"
+          class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+          更新報表
+        </button>
+      </div>
+    </div>
 
-    <script>
-        let dailyChart, personChart;
-        
-        // Set default date range (last 7 days)
-        const today = new Date();
-        const lastWeek = new Date(today);
-        lastWeek.setDate(lastWeek.getDate() - 7);
-        
-        document.getElementById('start-date').value = lastWeek.toISOString().split('T')[0];
-        document.getElementById('end-date').value = today.toISOString().split('T')[0];
-        
-        // Load initial data
-        document.addEventListener('DOMContentLoaded', function() {
-            updateReports();
-        });
-        
-        function updateReports() {
-            const person = document.getElementById('person-filter').value;
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
-            
-            let url = '/api/records';
-            const params = [];
-            
-            if (person) params.push(`person=${person}`);
-            if (startDate) params.push(`date_gte=${startDate}`);
-            if (endDate) params.push(`date_lte=${endDate}`);
-            
-            if (params.length > 0) {
-                url += '?' + params.join('&');
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="text-sm font-medium text-gray-500">總記錄數</div>
+        <div id="total-records" class="text-2xl font-bold text-gray-900">-</div>
+      </div>
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="text-sm font-medium text-gray-500">總抽煙數</div>
+        <div id="total-cigarettes" class="text-2xl font-bold text-red-600">-</div>
+      </div>
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="text-sm font-medium text-gray-500">日平均</div>
+        <div id="daily-average" class="text-2xl font-bold text-orange-600">-</div>
+      </div>
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="text-sm font-medium text-gray-500">最高單日</div>
+        <div id="max-daily" class="text-2xl font-bold text-purple-600">-</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6">
+      <!-- Daily Trend Chart -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">每日趨勢圖</h3>
+        <canvas id="daily-chart" width="400" height="200"></canvas>
+      </div>
+
+      <!-- Person Comparison Chart -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">人員比較圖</h3>
+        <canvas id="person-chart" width="400" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- Detailed Table -->
+    <div class="bg-white rounded-lg shadow">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-medium text-gray-900">詳細記錄</h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">日期</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">人物</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">數量</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+            </tr>
+          </thead>
+          <tbody id="records-table" class="bg-white divide-y divide-gray-200">
+            <!-- Table rows will be populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let dailyChart, personChart;
+
+    // Set default date range (last 7 days)
+    const today = new Date();
+    const lastWeek = new Date(today);
+    lastWeek.setDate(lastWeek.getDate() - 7);
+
+    document.getElementById('start-date').value = lastWeek.toISOString().split('T')[0];
+    document.getElementById('end-date').value = today.toISOString().split('T')[0];
+
+    // Load initial data
+    document.addEventListener('DOMContentLoaded', function () {
+      loadPersons();
+      updateReports();
+    });
+
+    // Load persons for dropdown
+    function loadPersons() {
+      fetch('/api/persons')
+        .then(response => response.json())
+        .then(persons => {
+          const select = document.getElementById('person-filter');
+          // Keep the default option
+          select.innerHTML = '<option value="">全部</option>';
+          
+          persons.forEach(person => {
+            const option = document.createElement('option');
+            option.value = person.name;
+            option.textContent = person.name;
+            select.appendChild(option);
+          });
+        })
+        .catch(error => console.error('Error loading persons:', error));
+    }
+
+    function updateReports() {
+      const person = document.getElementById('person-filter').value;
+      const startDate = document.getElementById('start-date').value;
+      const endDate = document.getElementById('end-date').value;
+
+      let url = '/api/records';
+      const params = [];
+
+      if (person) params.push(`person=${person}`);
+      if (startDate) params.push(`date_gte=${startDate}`);
+      if (endDate) params.push(`date_lte=${endDate}`);
+
+      if (params.length > 0) {
+        url += '?' + params.join('&');
+      }
+
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          updateStatistics(data);
+          updateCharts(data);
+          updateTable(data);
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function updateStatistics(data) {
+      const totalRecords = data.length;
+      const totalCigarettes = data.reduce((sum, record) => sum + record.count, 0);
+      const dailyAverage = totalRecords > 0 ? (totalCigarettes / totalRecords).toFixed(1) : 0;
+      const maxDaily = totalRecords > 0 ? Math.max(...data.map(r => r.count)) : 0;
+
+      document.getElementById('total-records').textContent = totalRecords;
+      document.getElementById('total-cigarettes').textContent = totalCigarettes;
+      document.getElementById('daily-average').textContent = dailyAverage;
+      document.getElementById('max-daily').textContent = maxDaily;
+    }
+
+    function updateCharts(data) {
+      // Daily trend chart
+      const dailyData = {};
+      data.forEach(record => {
+        if (!dailyData[record.date]) {
+          dailyData[record.date] = 0;
+        }
+        dailyData[record.date] += record.count;
+      });
+
+      const dates = Object.keys(dailyData).sort();
+      const counts = dates.map(date => dailyData[date]);
+
+      if (dailyChart) dailyChart.destroy();
+      const dailyCtx = document.getElementById('daily-chart').getContext('2d');
+      dailyChart = new Chart(dailyCtx, {
+        type: 'line',
+        data: {
+          labels: dates,
+          datasets: [{
+            label: '每日抽煙數',
+            data: counts,
+            borderColor: 'rgb(239, 68, 68)',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            tension: 0.1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true
             }
-            
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    updateStatistics(data);
-                    updateCharts(data);
-                    updateTable(data);
-                })
-                .catch(error => console.error('Error:', error));
+          }
         }
-        
-        function updateStatistics(data) {
-            const totalRecords = data.length;
-            const totalCigarettes = data.reduce((sum, record) => sum + record.count, 0);
-            const dailyAverage = totalRecords > 0 ? (totalCigarettes / totalRecords).toFixed(1) : 0;
-            const maxDaily = totalRecords > 0 ? Math.max(...data.map(r => r.count)) : 0;
-            
-            document.getElementById('total-records').textContent = totalRecords;
-            document.getElementById('total-cigarettes').textContent = totalCigarettes;
-            document.getElementById('daily-average').textContent = dailyAverage;
-            document.getElementById('max-daily').textContent = maxDaily;
+      });
+
+      // Person comparison chart
+      const personData = {};
+      data.forEach(record => {
+        if (!personData[record.person]) {
+          personData[record.person] = 0;
         }
-        
-        function updateCharts(data) {
-            // Daily trend chart
-            const dailyData = {};
-            data.forEach(record => {
-                if (!dailyData[record.date]) {
-                    dailyData[record.date] = 0;
-                }
-                dailyData[record.date] += record.count;
-            });
-            
-            const dates = Object.keys(dailyData).sort();
-            const counts = dates.map(date => dailyData[date]);
-            
-            if (dailyChart) dailyChart.destroy();
-            const dailyCtx = document.getElementById('daily-chart').getContext('2d');
-            dailyChart = new Chart(dailyCtx, {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [{
-                        label: '每日抽煙數',
-                        data: counts,
-                        borderColor: 'rgb(239, 68, 68)',
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-            
-            // Person comparison chart
-            const personData = {};
-            data.forEach(record => {
-                if (!personData[record.person]) {
-                    personData[record.person] = 0;
-                }
-                personData[record.person] += record.count;
-            });
-            
-            const persons = Object.keys(personData);
-            const personCounts = persons.map(person => personData[person]);
-            
-            if (personChart) personChart.destroy();
-            const personCtx = document.getElementById('person-chart').getContext('2d');
-            personChart = new Chart(personCtx, {
-                type: 'bar',
-                data: {
-                    labels: persons,
-                    datasets: [{
-                        label: '總抽煙數',
-                        data: personCounts,
-                        backgroundColor: [
-                            'rgba(59, 130, 246, 0.8)',
-                            'rgba(16, 185, 129, 0.8)',
-                            'rgba(245, 158, 11, 0.8)',
-                            'rgba(139, 92, 246, 0.8)'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
+        personData[record.person] += record.count;
+      });
+
+      const persons = Object.keys(personData);
+      const personCounts = persons.map(person => personData[person]);
+
+      if (personChart) personChart.destroy();
+      const personCtx = document.getElementById('person-chart').getContext('2d');
+      personChart = new Chart(personCtx, {
+        type: 'bar',
+        data: {
+          labels: persons,
+          datasets: [{
+            label: '總抽煙數',
+            data: personCounts,
+            backgroundColor: [
+              'rgba(59, 130, 246, 0.8)',
+              'rgba(16, 185, 129, 0.8)',
+              'rgba(245, 158, 11, 0.8)',
+              'rgba(139, 92, 246, 0.8)'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
         }
-        
-        function updateTable(data) {
-            const tbody = document.getElementById('records-table');
-            tbody.innerHTML = '';
-            
-            // Sort by date descending
-            data.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            data.forEach(record => {
-                const row = `
-                    <tr>
+      });
+    }
+
+    function updateTable(data) {
+      const tbody = document.getElementById('records-table');
+      tbody.innerHTML = '';
+
+      // Sort by date descending
+      data.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      data.forEach(record => {
+        const row = `
+                    <tr id="record-row-${record.id}">
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.date}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.person}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-600">${record.count} 支</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button class="delete-record-btn inline-flex items-center px-2 py-1 border border-red-300 text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                    onclick="deleteRecord(${record.id}, '${record.date}', '${record.person}', ${record.count})">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                                刪除
+                            </button>
+                        </td>
                     </tr>
                 `;
-                tbody.innerHTML += row;
-            });
-        }
-    </script>
+        tbody.innerHTML += row;
+      });
+    }
+
+    function deleteRecord(recordId, date, person, count) {
+      if (confirm(`確定要刪除這筆記錄嗎？\n\n日期：${date}\n人物：${person}\n數量：${count} 支`)) {
+        fetch(`/api/records/${recordId}`, {
+          method: 'DELETE'
+        })
+          .then(response => {
+            if (response.ok) {
+              // Remove row from table
+              document.getElementById(`record-row-${recordId}`).remove();
+
+              // Refresh reports to update statistics and charts
+              updateReports();
+
+              // Show success message
+              showToast('記錄已刪除！');
+            } else {
+              showToast('刪除失敗', 'error');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            showToast('刪除失敗', 'error');
+          });
+      }
+    }
+
+    function showToast(message, type = 'success') {
+      // Simple toast implementation
+      const toast = document.createElement('div');
+      toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        document.body.removeChild(toast);
+      }, 3000);
+    }
+  </script>
 </body>
+
 </html>
