@@ -1,0 +1,12 @@
+{
+  "name": "smoking-record-web",
+  "version": "1.0.0",
+  "description": "Smoking record tracking web app",
+  "scripts": {
+    "json-server": "json-server --watch db.json --port 3000 --cors",
+    "dev": "json-server --watch db.json --port 3000 --cors"
+  },
+  "devDependencies": {
+    "json-server": "^0.17.4"
+  }
+}

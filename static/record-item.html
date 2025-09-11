@@ -1,0 +1,26 @@
+<!-- This is a template for individual record items -->
+<div class="px-6 py-4 border-b border-gray-200 hover:bg-gray-50">
+    <div class="flex items-center justify-between">
+        <div class="flex-1">
+            <div class="flex items-center space-x-4">
+                <div class="text-sm font-medium text-gray-900">
+                    {date}
+                </div>
+                <div class="text-sm text-gray-600">
+                    {person}
+                </div>
+                <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    {count} 支
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center space-x-2">
+            <button class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
+                編輯
+            </button>
+            <button class="text-red-600 hover:text-red-900 text-sm font-medium">
+                刪除
+            </button>
+        </div>
+    </div>
+</div>
