@@ -17,12 +17,12 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <h1 class="text-xl font-bold text-gray-900">🚭 ISMP 煙癮紀錄</h1>
+                    <h1 class="text-lg sm:text-xl font-bold text-gray-900">🚭 ISMP 煙癮紀錄</h1>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <a href="/" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">首頁</a>
-                    <a href="/reports" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">報表</a>
-                    <a href="/persons" class="text-gray-900 bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">人員管理</a>
+                <div class="flex items-center space-x-1 sm:space-x-4">
+                    <a href="/" class="text-gray-700 hover:text-gray-900 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium">首頁</a>
+                    <a href="/reports" class="text-gray-700 hover:text-gray-900 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium">報表</a>
+                    <a href="/persons" class="text-gray-900 bg-gray-100 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium">人員管理</a>
                 </div>
             </div>
         </div>
@@ -34,7 +34,7 @@
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <h2 class="text-lg font-medium text-gray-900 mb-4">新增人員</h2>
             <form id="add-person-form" hx-post="/api/persons" hx-swap="none">
-                <div class="flex items-end space-x-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-end space-y-4 sm:space-y-0 sm:space-x-4">
                     <div class="flex-1">
                         <label for="name" class="block text-sm font-medium text-gray-700">姓名</label>
                         <input type="text" id="name" name="name" 
