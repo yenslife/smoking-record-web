@@ -19,15 +19,16 @@
 <body class="bg-gray-50 min-h-screen">
   <!-- Navigation -->
   <nav class="bg-white shadow-sm border-b">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-16">
         <div class="flex items-center">
-          <h1 class="text-xl font-bold text-gray-900">🚭 ISMP 煙癮紀錄</h1>
+          <h1 class="text-lg sm:text-xl font-bold text-gray-900">🚭 ISMP 煙癮紀錄</h1>
         </div>
-        <div class="flex items-center space-x-4">
-          <a href="/" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">首頁</a>
-          <a href="/reports" class="text-gray-900 bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">報表</a>
-          <a href="/persons" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">人員管理</a>
+        <div class="flex items-center space-x-1 sm:space-x-4">
+          <a href="/" class="text-gray-700 hover:text-gray-900 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium">首頁</a>
+          <a href="/reports" class="text-gray-900 bg-gray-100 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium">報表</a>
+          <a href="/persons" class="text-gray-700 hover:text-gray-900 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium hidden sm:block">人員管理</a>
+          <a href="/persons" class="text-gray-700 hover:text-gray-900 px-2 py-2 rounded-md text-xs font-medium sm:hidden">👥</a>
         </div>
       </div>
     </div>
@@ -38,7 +39,7 @@
     <!-- Filter Controls -->
     <div class="bg-white rounded-lg shadow p-6 mb-6">
       <h2 class="text-lg font-medium text-gray-900 mb-4">篩選條件</h2>
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div>
           <label for="person-filter" class="block text-sm font-medium text-gray-700">人物</label>
           <select id="person-filter"
@@ -67,46 +68,55 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-      <div class="bg-white rounded-lg shadow p-6">
-        <div class="text-sm font-medium text-gray-500">總記錄數</div>
-        <div id="total-records" class="text-2xl font-bold text-gray-900">-</div>
+    <div class="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4 mb-6">
+      <div class="bg-white rounded-lg shadow p-3 sm:p-6">
+        <div class="text-xs sm:text-sm font-medium text-gray-500">總記錄數</div>
+        <div id="total-records" class="text-lg sm:text-2xl font-bold text-gray-900">-</div>
       </div>
-      <div class="bg-white rounded-lg shadow p-6">
-        <div class="text-sm font-medium text-gray-500">總抽煙數</div>
-        <div id="total-cigarettes" class="text-2xl font-bold text-red-600">-</div>
+      <div class="bg-white rounded-lg shadow p-3 sm:p-6">
+        <div class="text-xs sm:text-sm font-medium text-gray-500">總抽煙數</div>
+        <div id="total-cigarettes" class="text-lg sm:text-2xl font-bold text-red-600">-</div>
       </div>
-      <div class="bg-white rounded-lg shadow p-6">
-        <div class="text-sm font-medium text-gray-500">日平均</div>
-        <div id="daily-average" class="text-2xl font-bold text-orange-600">-</div>
+      <div class="bg-white rounded-lg shadow p-3 sm:p-6">
+        <div class="text-xs sm:text-sm font-medium text-gray-500">日平均</div>
+        <div id="daily-average" class="text-lg sm:text-2xl font-bold text-orange-600">-</div>
       </div>
-      <div class="bg-white rounded-lg shadow p-6">
-        <div class="text-sm font-medium text-gray-500">最高單日</div>
-        <div id="max-daily" class="text-2xl font-bold text-purple-600">-</div>
+      <div class="bg-white rounded-lg shadow p-3 sm:p-6">
+        <div class="text-xs sm:text-sm font-medium text-gray-500">最高單日</div>
+        <div id="max-daily" class="text-lg sm:text-2xl font-bold text-purple-600">-</div>
       </div>
     </div>
 
     <!-- Charts -->
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6">
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-2 mb-6">
       <!-- Daily Trend Chart -->
-      <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">每日趨勢圖</h3>
-        <canvas id="daily-chart" width="400" height="200"></canvas>
+      <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+        <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-4">每日趨勢圖</h3>
+        <div class="relative">
+          <canvas id="daily-chart" class="max-w-full"></canvas>
+        </div>
       </div>
 
       <!-- Person Comparison Chart -->
-      <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">人員比較圖</h3>
-        <canvas id="person-chart" width="400" height="200"></canvas>
+      <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+        <h3 class="text-base sm:text-lg font-medium text-gray-900 mb-4">人員比較圖</h3>
+        <div class="relative">
+          <canvas id="person-chart" class="max-w-full"></canvas>
+        </div>
       </div>
     </div>
 
     <!-- Detailed Table -->
     <div class="bg-white rounded-lg shadow">
-      <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-medium text-gray-900">詳細記錄</h3>
+      <div class="px-4 sm:px-6 py-4 border-b border-gray-200">
+        <h3 class="text-base sm:text-lg font-medium text-gray-900">詳細記錄</h3>
       </div>
-      <div class="overflow-x-auto">
+      <!-- Mobile Card View -->
+      <div id="records-mobile" class="block sm:hidden">
+        <!-- Will be populated by JavaScript -->
+      </div>
+      <!-- Desktop Table View -->
+      <div class="hidden sm:block overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
@@ -277,29 +287,61 @@
 
     function updateTable(data) {
       const tbody = document.getElementById('records-table');
+      const mobileContainer = document.getElementById('records-mobile');
+      
       tbody.innerHTML = '';
+      mobileContainer.innerHTML = '';
 
       // Sort by date descending
       data.sort((a, b) => new Date(b.date) - new Date(a.date));
 
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-8 text-center text-gray-500">尚無記錄資料</td></tr>';
+        mobileContainer.innerHTML = '<div class="px-4 py-8 text-center text-gray-500">尚無記錄資料</div>';
+        return;
+      }
+
       data.forEach(record => {
+        // Desktop table row
         const row = `
-                    <tr id="record-row-${record.id}">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.date}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.person}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-600">${record.count} 支</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button class="delete-record-btn inline-flex items-center px-2 py-1 border border-red-300 text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                                    onclick="deleteRecord(${record.id}, '${record.date}', '${record.person}', ${record.count})">
-                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                                刪除
-                            </button>
-                        </td>
-                    </tr>
-                `;
+          <tr id="record-row-${record.id}">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.date}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.person}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-600">${record.count} 支</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <button class="delete-record-btn inline-flex items-center px-2 py-1 border border-red-300 text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                      onclick="deleteRecord(${record.id}, '${record.date}', '${record.person}', ${record.count})">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+                刪除
+              </button>
+            </td>
+          </tr>
+        `;
         tbody.innerHTML += row;
+
+        // Mobile card view
+        const card = `
+          <div id="record-mobile-${record.id}" class="px-4 py-4 border-b border-gray-200 hover:bg-gray-50">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <div class="text-sm font-medium text-gray-900">${record.date}</div>
+                  <div class="text-sm text-gray-600">${record.person}</div>
+                  <div class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    ${record.count} 支
+                  </div>
+                </div>
+              </div>
+              <button class="delete-record-btn inline-flex items-center px-2 py-1 border border-red-300 text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50"
+                      onclick="deleteRecord(${record.id}, '${record.date}', '${record.person}', ${record.count})">
+                🗑️
+              </button>
+            </div>
+          </div>
+        `;
+        mobileContainer.innerHTML += card;
       });
     }
 
@@ -310,8 +352,11 @@
         })
           .then(response => {
             if (response.ok) {
-              // Remove row from table
-              document.getElementById(`record-row-${recordId}`).remove();
+              // Remove row from table and mobile view
+              const tableRow = document.getElementById(`record-row-${recordId}`);
+              const mobileCard = document.getElementById(`record-mobile-${recordId}`);
+              if (tableRow) tableRow.remove();
+              if (mobileCard) mobileCard.remove();
 
               // Refresh reports to update statistics and charts
               updateReports();

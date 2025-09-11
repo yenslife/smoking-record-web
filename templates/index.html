@@ -17,12 +17,13 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <h1 class="text-xl font-bold text-gray-900">🚭 ISMP 煙癮紀錄</h1>
+                    <h1 class="text-lg sm:text-xl font-bold text-gray-900">🚭 ISMP 煙癮紀錄</h1>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <a href="/" class="text-gray-900 bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">首頁</a>
-                    <a href="/reports" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">報表</a>
-                    <a href="/persons" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">人員管理</a>
+                <div class="flex items-center space-x-1 sm:space-x-4">
+                    <a href="/" class="text-gray-900 bg-gray-100 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium">首頁</a>
+                    <a href="/reports" class="text-gray-700 hover:text-gray-900 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium">報表</a>
+                    <a href="/persons" class="text-gray-700 hover:text-gray-900 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium hidden sm:block">人員管理</a>
+                    <a href="/persons" class="text-gray-700 hover:text-gray-900 px-2 py-2 rounded-md text-xs font-medium sm:hidden">👥</a>
                 </div>
             </div>
         </div>
@@ -34,7 +35,7 @@
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <h2 class="text-lg font-medium text-gray-900 mb-4">新增記錄</h2>
             <form id="add-form" hx-post="/api/records" hx-swap="none">
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     <div>
                         <label for="date" class="block text-sm font-medium text-gray-700">日期</label>
                         <input type="date" id="date" name="date" 
@@ -119,10 +120,10 @@
                 
                 // Create HTML for the new record
                 const recordHtml = `
-                    <div id="record-${record.id}" class="px-6 py-4 border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150">
-                        <div class="flex items-center justify-between">
+                    <div id="record-${record.id}" class="px-4 sm:px-6 py-4 border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
                             <div class="flex-1">
-                                <div class="flex items-center space-x-4">
+                                <div class="flex flex-wrap items-center gap-2 sm:space-x-4">
                                     <div class="text-sm font-medium text-gray-900">
                                         ${record.date}
                                     </div>
@@ -134,7 +135,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-2 ml-4">
+                            <div class="flex items-center justify-end mt-2 sm:mt-0 sm:ml-4">
                                 <button class="delete-record inline-flex items-center px-2 py-1 border border-red-300 text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                                         hx-delete="/api/records/${record.id}"
                                         hx-target="#record-${record.id}"
@@ -143,7 +144,8 @@
                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                     </svg>
-                                    刪除
+                                    <span class="hidden sm:inline">刪除</span>
+                                    <span class="sm:hidden">🗑️</span>
                                 </button>
                             </div>
                         </div>
@@ -200,10 +202,10 @@
                 } else {
                     records.forEach(record => {
                         html += `
-                            <div id="record-${record.id}" class="px-6 py-4 border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150">
-                                <div class="flex items-center justify-between">
+                            <div id="record-${record.id}" class="px-4 sm:px-6 py-4 border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
                                     <div class="flex-1">
-                                        <div class="flex items-center space-x-4">
+                                        <div class="flex flex-wrap items-center gap-2 sm:space-x-4">
                                             <div class="text-sm font-medium text-gray-900">
                                                 ${record.date}
                                             </div>
@@ -215,7 +217,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="flex items-center space-x-2 ml-4">
+                                    <div class="flex items-center justify-end mt-2 sm:mt-0 sm:ml-4">
                                         <button class="delete-record inline-flex items-center px-2 py-1 border border-red-300 text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                                                 hx-delete="/api/records/${record.id}"
                                                 hx-target="#record-${record.id}"
@@ -224,7 +226,8 @@
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                             </svg>
-                                            刪除
+                                            <span class="hidden sm:inline">刪除</span>
+                                            <span class="sm:hidden">🗑️</span>
                                         </button>
                                     </div>
                                 </div>
