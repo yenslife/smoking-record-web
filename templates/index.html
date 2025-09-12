@@ -31,14 +31,31 @@
 
     <!-- Main content -->
     <main class="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <!-- Quick Record Section -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-medium text-gray-900">今日快速記錄</h2>
+                <div class="text-sm text-gray-500" id="current-date"></div>
+            </div>
+            <div id="quick-record-list" class="space-y-3">
+                <!-- Quick record items will be loaded here -->
+            </div>
+        </div>
+
         <!-- Add Record Form -->
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <h2 class="text-lg font-medium text-gray-900 mb-4">新增記錄</h2>
             <form id="add-form" hx-post="/api/records" hx-swap="none">
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <div>
                         <label for="date" class="block text-sm font-medium text-gray-700">日期</label>
                         <input type="date" id="date" name="date" 
+                               value="" 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2">
+                    </div>
+                    <div>
+                        <label for="time" class="block text-sm font-medium text-gray-700">時間</label>
+                        <input type="time" id="time" name="time" 
                                value="" 
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2">
                     </div>
@@ -80,11 +97,276 @@
     <div id="toast" class="fixed top-4 right-4 z-50"></div>
 
     <script>
-        // Set today's date as default and load persons
+        // Set today's date and current time as default and load persons
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            const taipeiTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Taipei"});
+            const taipeiDate = new Date(taipeiTime);
+            
+            document.getElementById('date').value = taipeiDate.toISOString().split('T')[0];
+            document.getElementById('time').value = taipeiDate.toTimeString().split(' ')[0].substring(0, 5); // HH:MM format
+            
             loadPersons();
+            initQuickRecord();
+            updateCurrentDate();
         });
+
+        // Quick record functionality
+        function initQuickRecord() {
+            checkAndResetDaily();
+            loadQuickRecordPersons();
+        }
+
+        function updateCurrentDate() {
+            const now = new Date();
+            const taipeiTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Taipei"}));
+            const dateStr = taipeiTime.toLocaleDateString('zh-TW', { 
+                year: 'numeric', 
+                month: 'numeric', 
+                day: 'numeric',
+                weekday: 'short'
+            });
+            document.getElementById('current-date').textContent = dateStr;
+        }
+
+        function getTodayKey() {
+            const taipeiTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Taipei"});
+            return new Date(taipeiTime).toISOString().split('T')[0];
+        }
+
+        function getTodayCount(personName) {
+            const key = `quickRecord_${getTodayKey()}_${personName}`;
+            return parseInt(localStorage.getItem(key) || '0');
+        }
+
+        function setTodayCount(personName, count) {
+            const key = `quickRecord_${getTodayKey()}_${personName}`;
+            localStorage.setItem(key, count.toString());
+        }
+
+        function checkAndResetDaily() {
+            const lastResetKey = 'lastResetDate';
+            const today = getTodayKey();
+            const lastReset = localStorage.getItem(lastResetKey);
+            
+            if (lastReset !== today) {
+                // Clear all previous day's quick records
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('quickRecord_') && !key.includes(today)) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                localStorage.setItem(lastResetKey, today);
+            }
+        }
+
+        function loadQuickRecordPersons() {
+            fetch('/api/persons')
+                .then(response => response.json())
+                .then(persons => {
+                    const container = document.getElementById('quick-record-list');
+                    container.innerHTML = '';
+                    
+                    persons.forEach(person => {
+                        const count = getTodayCount(person.name);
+                        const personHtml = `
+                            <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                                <div class="text-lg font-medium text-gray-900">${person.name}</div>
+                                <div class="flex items-center space-x-4">
+                                    <button class="quick-btn-minus w-8 h-8 rounded-full border-2 border-gray-300 text-gray-600 hover:border-red-500 hover:text-red-500 font-bold text-lg flex items-center justify-center" data-person="${person.name}">
+                                        −
+                                    </button>
+                                    <div class="px-4 py-2 border-2 border-gray-300 rounded-lg min-w-[60px] text-center font-bold text-lg" id="count-${person.name}">
+                                        ${count}
+                                    </div>
+                                    <button class="quick-btn-plus w-8 h-8 rounded-full border-2 border-gray-300 text-gray-600 hover:border-green-500 hover:text-green-500 font-bold text-lg flex items-center justify-center" data-person="${person.name}">
+                                        +
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        container.insertAdjacentHTML('beforeend', personHtml);
+                    });
+
+                    // Add event listeners for quick record buttons
+                    container.querySelectorAll('.quick-btn-plus').forEach(btn => {
+                        btn.addEventListener('click', (e) => updateQuickRecord(e.target.dataset.person, 1));
+                    });
+
+                    container.querySelectorAll('.quick-btn-minus').forEach(btn => {
+                        btn.addEventListener('click', (e) => updateQuickRecord(e.target.dataset.person, -1));
+                    });
+                })
+                .catch(error => console.error('Error loading persons for quick record:', error));
+        }
+
+        function updateQuickRecord(personName, change) {
+            const currentCount = getTodayCount(personName);
+            const newCount = Math.max(0, currentCount + change);
+            
+            if (newCount !== currentCount) {
+                setTodayCount(personName, newCount);
+                document.getElementById(`count-${personName}`).textContent = newCount;
+                
+                if (change > 0) {
+                    // Add record to backend when increasing count
+                    const formData = new FormData();
+                    formData.append('date', getTodayKey());
+                    formData.append('person', personName);
+                    formData.append('count', change.toString());
+                    
+                    // Add current time in Taipei timezone
+                    const taipeiTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Taipei"});
+                    const timeStr = new Date(taipeiTime).toTimeString().split(' ')[0]; // HH:MM:SS format
+                    formData.append('time', timeStr);
+                    
+                    fetch('/api/records', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(record => {
+                        // Add the new record to the top of the records list immediately
+                        addRecordToList(record);
+                        showToast(`已為 ${personName} 新增 ${change} 支煙記錄！`, 'success');
+                    })
+                    .catch(error => {
+                        console.error('Error adding record:', error);
+                        showToast('新增記錄失敗', 'error');
+                        // Revert the count on error
+                        setTodayCount(personName, currentCount);
+                        document.getElementById(`count-${personName}`).textContent = currentCount;
+                    });
+                } else if (change < 0) {
+                    // Delete the most recent record for this person when decreasing count
+                    deleteLatestRecordForPerson(personName);
+                }
+            }
+        }
+
+        function addRecordToList(record) {
+            const recordHtml = `
+                <div id="record-${record.id}" class="px-4 sm:px-6 py-4 border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
+                        <div class="flex-1">
+                            <div class="flex flex-wrap items-center gap-2 sm:space-x-4">
+                                <div class="text-sm font-medium text-gray-900">
+                                    ${record.date} ${record.time ? record.time.substring(0, 5) : ''}
+                                </div>
+                                <div class="text-sm text-gray-600">
+                                    ${record.person}
+                                </div>
+                                <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    ${record.count} 支
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-end mt-2 sm:mt-0 sm:ml-4">
+                            <button class="delete-record inline-flex items-center px-2 py-1 border border-red-300 text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                    hx-delete="/api/records/${record.id}"
+                                    hx-target="#record-${record.id}"
+                                    hx-swap="delete"
+                                    onclick="return confirmDeleteRecord('${record.date}', '${record.person}', ${record.count}, '${record.time || ''}')">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                                <span class="hidden sm:inline">刪除</span>
+                                <span class="sm:hidden">🗑️</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Check if the records list is showing empty state
+            const recordsList = document.getElementById('records-list');
+            const hasEmptyState = recordsList.querySelector('.text-center.text-gray-500');
+            
+            if (hasEmptyState) {
+                // If empty state exists, replace entire content
+                recordsList.innerHTML = recordHtml;
+                // Process HTMX attributes for the new content
+                htmx.process(recordsList);
+            } else {
+                // If there are already records, add to the beginning
+                recordsList.insertAdjacentHTML('afterbegin', recordHtml);
+                // Process HTMX attributes for the newly added record
+                const newRecord = document.getElementById(`record-${record.id}`);
+                htmx.process(newRecord);
+            }
+        }
+
+        function deleteLatestRecordForPerson(personName) {
+            const today = getTodayKey();
+            
+            // Find the latest record for this person today
+            fetch(`/api/records?person=${encodeURIComponent(personName)}&date=${today}&limit=1`)
+                .then(response => response.json())
+                .then(records => {
+                    if (records.length > 0) {
+                        const latestRecord = records[0];
+                        
+                        // Delete the record from backend
+                        fetch(`/api/records/${latestRecord.id}`, {
+                            method: 'DELETE'
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                // Remove the record from the UI
+                                const recordElement = document.getElementById(`record-${latestRecord.id}`);
+                                if (recordElement) {
+                                    recordElement.remove();
+                                }
+                                showToast(`已刪除 ${personName} 的最新記錄`, 'success');
+                            } else {
+                                throw new Error('Delete failed');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error deleting record:', error);
+                            showToast('刪除記錄失敗', 'error');
+                            // Revert the count on error
+                            const currentCount = getTodayCount(personName);
+                            setTodayCount(personName, currentCount + 1);
+                            document.getElementById(`count-${personName}`).textContent = currentCount + 1;
+                        });
+                    } else {
+                        showToast(`${personName} 今日沒有記錄可刪除`, 'error');
+                        // Revert the count
+                        const currentCount = getTodayCount(personName);
+                        setTodayCount(personName, currentCount + 1);
+                        document.getElementById(`count-${personName}`).textContent = currentCount + 1;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error finding latest record:', error);
+                    showToast('查找記錄失敗', 'error');
+                    // Revert the count
+                    const currentCount = getTodayCount(personName);
+                    setTodayCount(personName, currentCount + 1);
+                    document.getElementById(`count-${personName}`).textContent = currentCount + 1;
+                });
+        }
+
+        // Auto-refresh quick record at midnight Taipei time
+        function scheduleNextReset() {
+            const now = new Date();
+            const taipeiNow = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Taipei"}));
+            const tomorrow = new Date(taipeiNow);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+            
+            const msUntilMidnight = tomorrow.getTime() - taipeiNow.getTime();
+            
+            setTimeout(() => {
+                checkAndResetDaily();
+                loadQuickRecordPersons();
+                updateCurrentDate();
+                scheduleNextReset(); // Schedule next reset
+            }, msUntilMidnight);
+        }
+
+        // Start the daily reset scheduler
+        scheduleNextReset();
 
         // Load persons for dropdown
         function loadPersons() {
@@ -125,7 +407,7 @@
                             <div class="flex-1">
                                 <div class="flex flex-wrap items-center gap-2 sm:space-x-4">
                                     <div class="text-sm font-medium text-gray-900">
-                                        ${record.date}
+                                        ${record.date} ${record.time ? record.time.substring(0, 5) : ''}
                                     </div>
                                     <div class="text-sm text-gray-600">
                                         ${record.person}
@@ -140,7 +422,7 @@
                                         hx-delete="/api/records/${record.id}"
                                         hx-target="#record-${record.id}"
                                         hx-swap="delete"
-                                        onclick="return confirmDeleteRecord('${record.date}', '${record.person}', ${record.count})">
+                                        onclick="return confirmDeleteRecord('${record.date}', '${record.person}', ${record.count}, '${record.time || ''}')">
                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                     </svg>
@@ -171,7 +453,11 @@
                 
                 // Clear form after successful submission
                 document.getElementById('add-form').reset();
-                document.getElementById('date').value = new Date().toISOString().split('T')[0];
+                const taipeiTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Taipei"});
+                const taipeiDate = new Date(taipeiTime);
+                
+                document.getElementById('date').value = taipeiDate.toISOString().split('T')[0];
+                document.getElementById('time').value = taipeiDate.toTimeString().split(' ')[0].substring(0, 5); // HH:MM format
                 
                 // Show success toast
                 showToast('記錄已成功新增！', 'success');
@@ -207,7 +493,7 @@
                                     <div class="flex-1">
                                         <div class="flex flex-wrap items-center gap-2 sm:space-x-4">
                                             <div class="text-sm font-medium text-gray-900">
-                                                ${record.date}
+                                                ${record.date} ${record.time ? record.time.substring(0, 5) : ''}
                                             </div>
                                             <div class="text-sm text-gray-600">
                                                 ${record.person}
@@ -222,7 +508,7 @@
                                                 hx-delete="/api/records/${record.id}"
                                                 hx-target="#record-${record.id}"
                                                 hx-swap="delete"
-                                                onclick="return confirmDeleteRecord('${record.date}', '${record.person}', ${record.count})">
+                                                onclick="return confirmDeleteRecord('${record.date}', '${record.person}', ${record.count}, '${record.time || ''}')">
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                             </svg>
@@ -255,8 +541,9 @@
             }, 3000);
         }
 
-        function confirmDeleteRecord(date, person, count) {
-            return confirm(`確定要刪除這筆記錄嗎？\n\n日期：${date}\n人物：${person}\n數量：${count} 支`);
+        function confirmDeleteRecord(date, person, count, time) {
+            const timeStr = time ? ` ${time.substring(0, 5)}` : '';
+            return confirm(`確定要刪除這筆記錄嗎？\n\n日期：${date}${timeStr}\n人物：${person}\n數量：${count} 支`);
         }
     </script>
 </body>
