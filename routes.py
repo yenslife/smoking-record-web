@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Form
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import date, datetime
+from datetime import date, datetime, time
 import models
 from database import get_db
 
@@ -82,6 +82,7 @@ def delete_person(person_id: int, db: Session = Depends(get_db)):
 @router.get("/records", response_model=List[models.SmokingRecordResponse])
 def get_records(
     person: Optional[str] = None,
+    date: Optional[str] = None,
     date_gte: Optional[date] = None,
     date_lte: Optional[date] = None,
     limit: int = 100,
@@ -91,12 +92,18 @@ def get_records(
     
     if person:
         query = query.filter(models.SmokingRecord.person == person)
+    if date:
+        try:
+            parsed_date = datetime.strptime(date, '%Y-%m-%d').date()
+            query = query.filter(models.SmokingRecord.date == parsed_date)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
     if date_gte:
         query = query.filter(models.SmokingRecord.date >= date_gte)
     if date_lte:
         query = query.filter(models.SmokingRecord.date <= date_lte)
     
-    records = query.order_by(models.SmokingRecord.date.desc()).limit(limit).all()
+    records = query.order_by(models.SmokingRecord.date.desc(), models.SmokingRecord.time.desc()).limit(limit).all()
     return records
 
 @router.post("/records", response_model=models.SmokingRecordResponse)
@@ -104,6 +111,7 @@ def create_record(
     date: str = Form(...),
     person: str = Form(...),
     count: int = Form(...),
+    time: Optional[str] = Form(None),
     db: Session = Depends(get_db)
 ):
     try:
@@ -111,8 +119,19 @@ def create_record(
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
     
+    parsed_time = None
+    if time:
+        try:
+            parsed_time = datetime.strptime(time, '%H:%M:%S').time()
+        except ValueError:
+            try:
+                parsed_time = datetime.strptime(time, '%H:%M').time()
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid time format. Use HH:MM or HH:MM:SS")
+    
     record_data = models.SmokingRecordCreate(
         date=parsed_date,
+        time=parsed_time,
         person=person,
         count=count
     )
