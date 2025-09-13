@@ -103,6 +103,7 @@ smoking-record-web/
 - [ ] 優化圖表顯示
 - [ ] 設定 SSL/TLS (certbot)
 - [ ] Pagination for records table
+- [ ] /reports 頁面的數值檢查
 
 ## 開發說明
 
