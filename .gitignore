@@ -9,7 +9,29 @@ wheels/
 # Virtual environments
 .venv
 
+# Database files
 *.db
+*.sqlite
+*.sqlite3
+
+# Debug and temporary files
+*.tmp
+*.bak
+*.log
+*debug*.py
+*test*.py
+*.debug
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
 
 # node package
 node_modules/
