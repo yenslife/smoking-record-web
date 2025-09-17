@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(uv add:*)"
+      "Bash(uv add:*)",
+      "Bash(mkdir:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
