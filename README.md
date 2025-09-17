@@ -104,6 +104,7 @@ smoking-record-web/
 - [ ] 設定 SSL/TLS (certbot)
 - [ ] Pagination for records table
 - [ ] /reports 頁面的數值檢查
+- [ ] 第三方登入 e.g. Google
 
 ## 開發說明
 
