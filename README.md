@@ -105,6 +105,7 @@ smoking-record-web/
 - [ ] Pagination for records table
 - [ ] /reports 頁面的數值檢查
 - [ ] 第三方登入 e.g. Google
+- [ ] record 頁面的每一筆資料編輯
 
 ## 開發說明
 
