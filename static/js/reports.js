@@ -2,6 +2,12 @@
 
 let dailyChart, personChart;
 
+// Pagination state
+let currentPage = 1;
+let pageSize = 25;
+let totalRecords = 0;
+let allRecords = []; // Store all records for client-side pagination
+
 // Set default date range (last 7 days)
 const today = new Date();
 const lastWeek = new Date(today);
@@ -14,7 +20,35 @@ document.getElementById('end-date').value = today.toISOString().split('T')[0];
 document.addEventListener('DOMContentLoaded', function () {
     loadPersonsForFilter();
     updateReports();
+    initializePagination();
 });
+
+// Initialize pagination event listeners
+function initializePagination() {
+    // Page size selector
+    document.getElementById('page-size').addEventListener('change', function(e) {
+        pageSize = parseInt(e.target.value);
+        currentPage = 1; // Reset to first page
+        fetchPaginatedRecords(); // Fetch new page from server
+    });
+
+    // Previous page button
+    document.getElementById('prev-page').addEventListener('click', function() {
+        if (currentPage > 1) {
+            currentPage--;
+            fetchPaginatedRecords(); // Fetch previous page from server
+        }
+    });
+
+    // Next page button
+    document.getElementById('next-page').addEventListener('click', function() {
+        const totalPages = Math.ceil(totalRecords / pageSize);
+        if (currentPage < totalPages) {
+            currentPage++;
+            fetchPaginatedRecords(); // Fetch next page from server
+        }
+    });
+}
 
 // Load persons for dropdown filter
 function loadPersonsForFilter() {
@@ -36,6 +70,17 @@ function loadPersonsForFilter() {
 }
 
 function updateReports() {
+    currentPage = 1; // Reset to first page when filters change
+
+    // First get all records for statistics and charts, then fetch paginated records
+    fetchAllRecordsForStats().then(() => {
+        // After we know the total count, fetch paginated records
+        fetchPaginatedRecords();
+    });
+}
+
+// Fetch all records for statistics and charts
+function fetchAllRecordsForStats() {
     const person = document.getElementById('person-filter').value;
     const startDate = document.getElementById('start-date').value;
     const endDate = document.getElementById('end-date').value;
@@ -47,6 +92,50 @@ function updateReports() {
     if (startDate) params.push(`date_gte=${startDate}`);
     if (endDate) params.push(`date_lte=${endDate}`);
 
+    // Add a high limit for statistics (but still reasonable)
+    params.push('limit=10000');
+
+    if (params.length > 0) {
+        url += '?' + params.join('&');
+    }
+
+    return fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            updateStatistics(data);
+            updateCharts(data);
+
+            // Store total count for pagination info
+            totalRecords = data.length;
+        })
+        .catch(error => {
+            console.error('Error fetching stats:', error);
+            throw error;
+        });
+}
+
+// Fetch paginated records for table display
+function fetchPaginatedRecords() {
+    const person = document.getElementById('person-filter').value;
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+
+    let url = '/api/records';
+    const params = [];
+
+    if (person) params.push(`person=${person}`);
+    if (startDate) params.push(`date_gte=${startDate}`);
+    if (endDate) params.push(`date_lte=${endDate}`);
+
+    // Add pagination parameters
+    params.push(`limit=${pageSize}`);
+
+    // Calculate offset (skip) for current page
+    const offset = (currentPage - 1) * pageSize;
+    if (offset > 0) {
+        params.push(`skip=${offset}`);
+    }
+
     if (params.length > 0) {
         url += '?' + params.join('&');
     }
@@ -54,11 +143,11 @@ function updateReports() {
     fetch(url)
         .then(response => response.json())
         .then(data => {
-            updateStatistics(data);
-            updateCharts(data);
-            updateTable(data);
+            allRecords = data; // This is now just current page records
+            updateTableDisplay();
+            updatePaginationControls();
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => console.error('Error fetching records:', error));
 }
 
 function updateStatistics(data) {
@@ -150,7 +239,8 @@ function updateCharts(data) {
     });
 }
 
-function updateTable(data) {
+// Update table display with current page data
+function updateTableDisplay() {
     const tbody = document.getElementById('records-table');
     const mobileContainer = document.getElementById('records-mobile');
 
@@ -158,15 +248,21 @@ function updateTable(data) {
     mobileContainer.innerHTML = '';
 
     // Sort by date descending
-    data.sort((a, b) => new Date(b.date) - new Date(a.date));
+    const sortedRecords = [...allRecords].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    if (data.length === 0) {
+    if (sortedRecords.length === 0) {
         tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-8 text-center text-gray-500">尚無記錄資料</td></tr>';
         mobileContainer.innerHTML = '<div class="px-4 py-8 text-center text-gray-500">尚無記錄資料</div>';
+        document.getElementById('pagination-container').style.display = 'none';
         return;
     }
 
-    data.forEach(record => {
+    // Show pagination container
+    document.getElementById('pagination-container').style.display = 'block';
+
+    // No need to slice - allRecords is already paginated from server
+    // Render all records (which are already the current page records)
+    sortedRecords.forEach(record => {
         // Desktop table row
         const row = `
           <tr id="record-row-${record.id}">
@@ -210,6 +306,97 @@ function updateTable(data) {
     });
 }
 
+// Update pagination controls
+function updatePaginationControls() {
+    if (totalRecords === 0) {
+        document.getElementById('pagination-container').style.display = 'none';
+        return;
+    }
+
+    const totalPages = Math.ceil(totalRecords / pageSize);
+    const startRecord = (currentPage - 1) * pageSize + 1;
+    const endRecord = Math.min(currentPage * pageSize, totalRecords);
+
+    // Update pagination info
+    document.getElementById('pagination-start').textContent = startRecord;
+    document.getElementById('pagination-end').textContent = endRecord;
+    document.getElementById('pagination-total').textContent = totalRecords;
+
+    // Update page size selector
+    document.getElementById('page-size').value = pageSize;
+
+    // Update navigation buttons
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
+
+    // Generate page numbers
+    generatePageNumbers(totalPages);
+}
+
+// Generate page number buttons
+function generatePageNumbers(totalPages) {
+    const pageNumbersContainer = document.getElementById('page-numbers');
+    pageNumbersContainer.innerHTML = '';
+
+    if (totalPages <= 1) return;
+
+    // Calculate which page numbers to show
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, currentPage + 2);
+
+    // Adjust range if we're near the beginning or end
+    if (currentPage <= 3) {
+        endPage = Math.min(5, totalPages);
+    }
+    if (currentPage >= totalPages - 2) {
+        startPage = Math.max(1, totalPages - 4);
+    }
+
+    // First page and ellipsis
+    if (startPage > 1) {
+        addPageButton(1, false);
+        if (startPage > 2) {
+            pageNumbersContainer.innerHTML += '<span class="px-2 py-2 text-sm text-gray-500">...</span>';
+        }
+    }
+
+    // Page numbers
+    for (let i = startPage; i <= endPage; i++) {
+        addPageButton(i, i === currentPage);
+    }
+
+    // Last page and ellipsis
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            pageNumbersContainer.innerHTML += '<span class="px-2 py-2 text-sm text-gray-500">...</span>';
+        }
+        addPageButton(totalPages, false);
+    }
+}
+
+// Add page button
+function addPageButton(pageNum, isActive) {
+    const pageNumbersContainer = document.getElementById('page-numbers');
+    const buttonClass = isActive
+        ? 'relative inline-flex items-center px-4 py-2 border text-sm font-medium bg-indigo-50 border-indigo-500 text-indigo-600'
+        : 'relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50';
+
+    const button = document.createElement('button');
+    button.className = buttonClass;
+    button.textContent = pageNum;
+    button.onclick = () => {
+        if (currentPage !== pageNum) {
+            currentPage = pageNum;
+            fetchPaginatedRecords(); // Fetch selected page from server
+        }
+    };
+
+    pageNumbersContainer.appendChild(button);
+}
+
 function deleteRecord(recordId, date, person, count) {
     if (confirm(`確定要刪除這筆記錄嗎？\n\n日期：${date}\n人物：${person}\n數量：${count} 支`)) {
         fetch(`/api/records/${recordId}`, {
@@ -217,14 +404,23 @@ function deleteRecord(recordId, date, person, count) {
         })
             .then(response => {
                 if (response.ok) {
-                    // Remove row from table and mobile view
-                    const tableRow = document.getElementById(`record-row-${recordId}`);
-                    const mobileCard = document.getElementById(`record-mobile-${recordId}`);
-                    if (tableRow) tableRow.remove();
-                    if (mobileCard) mobileCard.remove();
+                    // Remove from allRecords array
+                    allRecords = allRecords.filter(record => record.id !== recordId);
+                    totalRecords = allRecords.length;
 
-                    // Refresh reports to update statistics and charts
-                    updateReports();
+                    // Adjust current page if needed
+                    const totalPages = Math.ceil(totalRecords / pageSize);
+                    if (currentPage > totalPages && totalPages > 0) {
+                        currentPage = totalPages;
+                    }
+
+                    // Update statistics and charts with remaining records
+                    updateStatistics(allRecords);
+                    updateCharts(allRecords);
+
+                    // Update table display and pagination
+                    updateTableDisplay();
+                    updatePaginationControls();
 
                     // Show success message
                     showToast('記錄已刪除！');

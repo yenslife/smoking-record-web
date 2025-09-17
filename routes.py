@@ -86,6 +86,7 @@ def get_records(
     date_gte: Optional[date] = None,
     date_lte: Optional[date] = None,
     limit: int = 100,
+    skip: int = 0,
     db: Session = Depends(get_db)
 ):
     query = db.query(models.SmokingRecord)
@@ -103,7 +104,7 @@ def get_records(
     if date_lte:
         query = query.filter(models.SmokingRecord.date <= date_lte)
     
-    records = query.order_by(models.SmokingRecord.date.desc(), models.SmokingRecord.time.desc()).limit(limit).all()
+    records = query.order_by(models.SmokingRecord.date.desc(), models.SmokingRecord.time.desc()).offset(skip).limit(limit).all()
     return records
 
 @router.post("/records", response_model=models.SmokingRecordResponse)
