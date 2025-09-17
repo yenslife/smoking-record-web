@@ -101,8 +101,7 @@ smoking-record-web/
 - [x] 使用 SQLite 資料庫
 - [ ] 加入資料導出功能 (csv)
 - [ ] 優化圖表顯示
-- [ ] 設定 SSL/TLS (certbot)
-- [ ] Pagination for records table
+- [x] Pagination for records table
 - [ ] /reports 頁面的數值檢查
 - [ ] 第三方登入 e.g. Google
 - [x] record 頁面的每一筆資料編輯
